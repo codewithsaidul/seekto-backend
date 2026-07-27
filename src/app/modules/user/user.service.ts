@@ -9,7 +9,7 @@ export const UserService = {
   getAllUsers: async (query: Record<string, unknown>) => {
     const usersQueryBuilder = new QueryBuilder(
       User.find({
-        role: { $nin: [UserRole.ADMIN, UserRole.SUPERADMIN] },
+        role: { $nin: [UserRole.ADMIN, UserRole.ADMIN] },
         isDeleted: false,
       }),
       query
@@ -68,16 +68,7 @@ export const UserService = {
       );
     }
 
-    const targetUserRole = targetUser.role as UserRole;
-
-    if (targetUserRole === UserRole.SUPERADMIN) {
-      throw new AppError(
-        StatusCodes.FORBIDDEN,
-        "Operation forbidden. Cannot modify the status of a Super Admin."
-      );
-    }
-
-    if (targetUserRole === UserRole.ADMIN && updaterRole === UserRole.ADMIN) {
+    if (updaterRole === UserRole.ADMIN) {
       throw new AppError(
         StatusCodes.FORBIDDEN,
         "An Admin cannot modify the status of another Admin."
@@ -102,8 +93,8 @@ export const UserService = {
     }
 
     if (
-      userToUpdate.role === UserRole.SUPERADMIN &&
-      currentUserRole !== UserRole.SUPERADMIN
+      userToUpdate.role === UserRole.ADMIN &&
+      currentUserRole !== UserRole.ADMIN
     ) {
       throw new AppError(
         StatusCodes.FORBIDDEN,
@@ -112,7 +103,7 @@ export const UserService = {
     }
 
     if (
-      currentUserRole !== UserRole.SUPERADMIN &&
+      currentUserRole !== UserRole.ADMIN &&
       currentUserRole !== UserRole.ADMIN
     ) {
       if (payload.role || payload.status || payload.email) {
@@ -139,8 +130,8 @@ export const UserService = {
     }
 
     if (
-      userToDelete.role === UserRole.SUPERADMIN &&
-      currentUserRole !== UserRole.SUPERADMIN
+      userToDelete.role === UserRole.ADMIN &&
+      currentUserRole !== UserRole.ADMIN
     ) {
       throw new AppError(
         StatusCodes.FORBIDDEN,
@@ -148,13 +139,13 @@ export const UserService = {
       );
     }
 
-    if (userToDelete.role === UserRole.SUPERADMIN) {
-      const activeSuperAdminCount = await User.countDocuments({
-        role: UserRole.SUPERADMIN,
+    if (userToDelete.role === UserRole.ADMIN) {
+      const activeADMINCount = await User.countDocuments({
+        role: UserRole.ADMIN,
         isDeleted: false,
       });
 
-      if (activeSuperAdminCount <= 1) {
+      if (activeADMINCount <= 1) {
         throw new AppError(
           StatusCodes.CONFLICT,
           "Operation Blocked! You cannot delete the only remaining Super Admin."

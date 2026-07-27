@@ -1,7 +1,6 @@
 import { Model } from "mongoose";
 
 export enum UserRole {
-  SUPERADMIN = "superadmin",
   ADMIN = "admin",
   HOST = "host",
   USER = "user"
@@ -13,10 +12,6 @@ export enum UserStatus {
   ACTIVE = "active"
 }
 
-export interface IAuthProvider {
-  provider: "google" | "credentials";
-  providerId: string;
-}
 
 export interface IUser {
   _id?: string;
@@ -24,15 +19,10 @@ export interface IUser {
   email: string;
   password?: string;
   phone?: string;
-  bio: string;
-  interests: string[];
   location: string;
   role?: UserRole;
   status?: UserStatus;
-  
-  // Google Specific Fields
-  providers?: IAuthProvider[]; // কেমনে লগইন করল?
-  profileImg?: string;     // গুগল থেকে পাওয়া ছবি
+
   
 
   isPasswordResetTokenUsed?: boolean;

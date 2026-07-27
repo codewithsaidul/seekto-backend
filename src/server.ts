@@ -3,7 +3,7 @@ import http from "http";
 import mongoose from "mongoose";
 import app from "./app";
 import { envVars } from "./app/config/env";
-import { seedSuperAdmin } from "./app/utils/seedSuperAdmin";
+import { seedAdmin } from "./app/utils/seedAdmin";
 
 
 let server: http.Server;
@@ -14,7 +14,7 @@ const startServer = async () => {
     await mongoose.connect(`${envVars.DATABASE_URL}`);
     console.log("✅ MongoDB Connected Successfully");
 
-    await seedSuperAdmin();
+    await seedAdmin();
 
     server = http.createServer(app);
 

@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import cors from "cors";
 import express, { Application, Request, Response } from "express";
 import cookieParser from "cookie-parser";
