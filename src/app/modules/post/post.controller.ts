@@ -24,4 +24,77 @@ export const PostController = {
       data: post,
     });
   }),
+
+  getAllPost: catchAsync(async (req: TRequest, res: TResponse, next: TNext) => {
+    const post = await PostServices.getAllPost(
+      req.query as Record<string, string>,
+    );
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "All Post retrieved successfully",
+      data: post,
+    });
+  }),
+
+  getPostDetailsBySlug: catchAsync(
+    async (req: TRequest, res: TResponse, next: TNext) => {
+      const { slug } = req.params;
+      const post = await PostServices.getPostDetailsBySlug(slug);
+
+      sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Post details retrieved successfully",
+        data: post,
+      });
+    },
+  ),
+
+  updatePostById: catchAsync(
+    async (req: TRequest, res: TResponse, next: TNext) => {
+      const { postId } = req.params;
+      const updateData = {
+        ...req.body,
+        ...(req.file && { image: req.file.path }),
+      };
+      const post = await PostServices.updatePostById(postId, updateData);
+
+      sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Post updated successfully",
+        data: post,
+      });
+    },
+  ),
+
+  softDeletePostByIds: catchAsync(
+    async (req: TRequest, res: TResponse, next: TNext) => {
+      const { postIds } = req.body;
+      const deletedPosts = await PostServices.softDeletePostByIds(postIds);
+
+      sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Posts moved to the trash successfully.",
+        data: deletedPosts,
+      });
+    },
+  ),
+
+  permanentDeletePostByIds: catchAsync(
+    async (req: TRequest, res: TResponse, next: TNext) => {
+      const { postIds } = req.body;
+      const deletedPosts = await PostServices.permanentDeletePostByIds(postIds);
+
+      sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Posts permanently deleted successfully",
+        data: deletedPosts,
+      });
+    },
+  ),
 };

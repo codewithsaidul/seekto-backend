@@ -16,3 +16,27 @@ router.post(
   validateRequest(createPostZodSchema),
   PostController.createPost
 );
+
+router.get("/", PostController.getAllPost);
+
+router.get("/:slug", PostController.getPostDetailsBySlug);
+
+router.patch(
+  "/:postId",
+  checkAuth(UserRole.ADMIN),
+  multerUpload.single("file"),
+  PostController.updatePostById
+);
+
+router.delete(
+  "/",
+  checkAuth(UserRole.ADMIN),
+  PostController.softDeletePostByIds
+);
+
+
+router.delete(
+  "/permanent",
+  checkAuth(UserRole.ADMIN),
+  PostController.permanentDeletePostByIds
+);
