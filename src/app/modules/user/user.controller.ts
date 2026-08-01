@@ -39,46 +39,7 @@ export const UserController = {
     }
   ),
 
-  updateUserStatus: catchAsync(
-    async (req: TRequest, res: TResponse, next: TNext) => {
-      const payload = req.body;
-      const { userId, role} = req.user as JwtPayload
-      const user = await UserService.updateUserStatus(
-        req.params.userId as string,
-        payload.status,
-        userId,
-        role
-      );
 
-      sendResponse(res, {
-        statusCode: StatusCodes.OK,
-        success: true,
-        message: "User status updated successfully",
-        data: user,
-      });
-    }
-  ),
-
-  updateUserInfo: catchAsync(
-    async (req: TRequest, res: TResponse, next: TNext) => {
-      const { userId } = req.params;
-      const payload = req.body;
-      const decodedToken = req.user as JwtPayload;
-
-      const updatedUser = await UserService.updateUserInfo(
-        userId as string,
-        payload,
-        decodedToken.role
-      );
-
-      sendResponse(res, {
-        statusCode: StatusCodes.OK,
-        success: true,
-        message: "User has been updated successfully",
-        data: updatedUser,
-      });
-    }
-  ),
 
   deleteUser: catchAsync(async (req: TRequest, res: TResponse, next: TNext) => {
     const { userId } = req.params;

@@ -1,31 +1,11 @@
 import { StatusCodes } from "http-status-codes";
 import { AppError } from "../../errorHelpers/AppError";
-import { QueryBuilder } from "../../utils/queryBuilder";
-import { userSearchableFields } from "./user.constants";
-import { IUser, UserRole, UserStatus } from "./user.interface";
-import { User } from "./user.model";
+import { UserRole, UserStatus } from "./user.interface";
+import { UserRepository } from "./userrepository";
 
 export const UserService = {
   getAllUsers: async (query: Record<string, unknown>) => {
-    const usersQueryBuilder = new QueryBuilder(
-      User.find({
-        role: { $nin: [UserRole.ADMIN, UserRole.ADMIN] },
-        isDeleted: false,
-      }),
-      query
-    )
-      .search(userSearchableFields)
-      .filter()
-      .sort()
-      .paginate()
-      .fields();
-
-    const [data, meta] = await Promise.all([
-      usersQueryBuilder
-        .build()
-        .select("-password -auths -isPasswordResetTokenUsed"),
-      usersQueryBuilder.getMeta(),
-    ]);
+    const { data, meta } = await UserRepository.getAllUsers(query);
 
     return {
       data,
@@ -34,7 +14,7 @@ export const UserService = {
   },
 
   getUserProfile: async (userId: string) => {
-    const user = await User.findById(userId);
+    const user = await UserRepository.findByUserId(userId);
 
     if (!user) {
       throw new AppError(StatusCodes.NOT_FOUND, "User not found");
@@ -49,81 +29,8 @@ export const UserService = {
     return user;
   },
 
-  updateUserStatus: async (
-    targetUserId: string,
-    newStatus: UserStatus,
-    updaterId: string,
-    updaterRole: UserRole
-  ) => {
-    const targetUser = await User.findById(targetUserId);
-
-    if (!targetUser) {
-      throw new AppError(StatusCodes.NOT_FOUND, "Target user not found");
-    }
-
-    if (targetUserId === updaterId) {
-      throw new AppError(
-        StatusCodes.FORBIDDEN,
-        "You cannot modify your own status through this endpoint."
-      );
-    }
-
-    if (updaterRole === UserRole.ADMIN) {
-      throw new AppError(
-        StatusCodes.FORBIDDEN,
-        "An Admin cannot modify the status of another Admin."
-      );
-    }
-
-    targetUser.status = newStatus;
-    await targetUser.save();
-
-    return targetUser;
-  },
-
-  updateUserInfo: async (
-    userId: string,
-    payload: Partial<IUser>,
-    currentUserRole: string
-  ) => {
-    const userToUpdate = await User.findById(userId);
-
-    if (!userToUpdate) {
-      throw new AppError(StatusCodes.NOT_FOUND, "User not found");
-    }
-
-    if (
-      userToUpdate.role === UserRole.ADMIN &&
-      currentUserRole !== UserRole.ADMIN
-    ) {
-      throw new AppError(
-        StatusCodes.FORBIDDEN,
-        "Access Denied! Only a Super Admin can modify Super Admin accounts."
-      );
-    }
-
-    if (
-      currentUserRole !== UserRole.ADMIN &&
-      currentUserRole !== UserRole.ADMIN
-    ) {
-      if (payload.role || payload.status || payload.email) {
-        throw new AppError(
-          StatusCodes.FORBIDDEN,
-          "You cannot update sensitive fields (Role, Status, Email)"
-        );
-      }
-    }
-
-    const result = await User.findByIdAndUpdate(userId, payload, {
-      new: true,
-      runValidators: true,
-    });
-
-    return result;
-  },
-
   deleteUser: async (userId: string, currentUserRole: string) => {
-    const userToDelete = await User.findById(userId);
+    const userToDelete = await UserRepository.findByUserId(userId);
 
     if (!userToDelete) {
       throw new AppError(StatusCodes.NOT_FOUND, "User not found");
@@ -135,26 +42,23 @@ export const UserService = {
     ) {
       throw new AppError(
         StatusCodes.FORBIDDEN,
-        "Access Denied! Only a Super Admin can delete another Super Admin."
+        "Access Denied! Only a Admin can delete another Admin.",
       );
     }
 
     if (userToDelete.role === UserRole.ADMIN) {
-      const activeADMINCount = await User.countDocuments({
-        role: UserRole.ADMIN,
-        isDeleted: false,
-      });
+      const activeADMINCount = await UserRepository.countActiveAdmins()
 
       if (activeADMINCount <= 1) {
         throw new AppError(
           StatusCodes.CONFLICT,
-          "Operation Blocked! You cannot delete the only remaining Super Admin."
+          "Operation Blocked! You cannot delete the only remaining Admin.",
         );
       }
     }
 
-    userToDelete.isDeleted = true;
-    await userToDelete.save();
+    
+    await UserRepository.softDeleteById(userId);
 
     return null;
   },
