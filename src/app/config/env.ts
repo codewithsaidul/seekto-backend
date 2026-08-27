@@ -20,6 +20,14 @@ interface ENVCONFIG {
   ADMIN_EMAIL: string;
   ADMIN_PASSWORD: string;
 
+  ShurjoPay: {
+    SP_ENDPOINT: string;
+    SP_USERNAME: string;
+    SP_PASSWORD: string;
+    SP_PREFIX: string;
+    SP_RETURN_URL: string;
+  };
+
   SSL: {
     SSL_STORE_ID: string;
     SSL_STORE_PASS: string;
@@ -75,11 +83,16 @@ const loadEnvVariable = (): ENVCONFIG => {
     "ADMIN_EMAIL",
     "ADMIN_PASSWORD",
 
-
     "SSL_STORE_ID",
     "SSL_STORE_PASS",
     "SSL_PAYMENT_API",
     "SSL_VALIDATION_API",
+
+    "SP_ENDPOINT",
+    "SP_USERNAME",
+    "SP_PASSWORD",
+    "SP_PREFIX",
+    "SP_RETURN_URL",
 
     "SSL_SUCCESS_BACKEND_URL",
     "SSL_FAIL_BACKEND_URL",
@@ -130,6 +143,14 @@ const loadEnvVariable = (): ENVCONFIG => {
       JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET as string,
       JWT_REFRESH_EXPIRATION_TIME: process.env
         .JWT_REFRESH_EXPIRATION_TIME as string,
+    },
+
+    ShurjoPay: {
+      SP_ENDPOINT: process.env.SP_ENDPOINT as string,
+      SP_USERNAME: process.env.SP_USERNAME as string,
+      SP_PASSWORD: process.env.SP_PASSWORD as string,
+      SP_PREFIX: process.env.SP_PREFIX as string,
+      SP_RETURN_URL: process.env.SP_RETURN_URL as string,
     },
 
     SSL: {

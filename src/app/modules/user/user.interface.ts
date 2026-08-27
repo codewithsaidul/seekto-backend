@@ -22,9 +22,6 @@ export interface IUser {
   location: string;
   role?: UserRole;
   status?: UserStatus;
-
-  
-
   isPasswordResetTokenUsed?: boolean;
   isDeleted: boolean;
   createdAt?: Date;

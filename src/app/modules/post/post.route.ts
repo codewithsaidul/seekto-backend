@@ -40,3 +40,8 @@ router.delete(
   checkAuth(UserRole.ADMIN),
   PostController.permanentDeletePostByIds
 );
+
+
+
+
+export const PostRoutes = router;
